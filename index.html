@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            background: #1a2a6c;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .postal {
+            width: 800px;
+            height: 500px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+            cursor: pointer;
+        }
+
+        .postal.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .front {
+            background: url('/api/placeholder/800/500') center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            background-color: #b30000;
+            overflow: hidden;
+        }
+
+        .back {
+            background: #fff url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25,25 L75,75 M75,25 L25,75' stroke='%23f0f0f0' stroke-width='1'/%3E%3C/svg%3E");
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
+            font-family: 'Arial', cursive;
+        }
+
+        .snow-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .snow {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: snowfall linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes snowfall {
+            to {
+                transform: translateY(500px) rotate(360deg);
+            }
+        }
+
+        .village {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 150px;
+            background: #fff;
+            border-radius: 50% 50% 0 0;
+            overflow: hidden;
+        }
+
+        .house {
+            position: absolute;
+            bottom: 0;
+            width: 60px;
+            height: 80px;
+            background: #7c5e5e;
+            clip-path: polygon(0 30%, 50% 0, 100% 30%, 100% 100%, 0 100%);
+        }
+
+        .window {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #ffeb3b;
+            animation: flicker 2s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .tree {
+            font-size: 120px;
+            margin: 20px;
+            animation: glow 2s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-family: 'Arial', cursive;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        input {
+            padding: 12px 20px;
+            margin: 10px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            width: 200px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .back input {
+            background: #fff;
+            border: 2px solid #4CAF50;
+        }
+
+        button {
+            padding: 12px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .music-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .lights {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            top: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .light {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            animation: colorChange 2s infinite;
+        }
+
+        @keyframes colorChange {
+            0% { background: #ff0000; }
+            33% { background: #00ff00; }
+            66% { background: #0000ff; }
+            100% { background: #ff0000; }
+        }
+
+        .message-container {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #4CAF50;
+            border-radius: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .message {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .signature {
+            text-align: right;
+            font-style: italic;
+            color: #666;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stamps {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 40px;
+            transform: rotate(15deg);
+        }
+
+        .postal-lines {
+            border-top: 2px solid #ddd;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="postal" id="postal">
+        <div class="music-control" id="musicControl">🎵</div>
+        <div class="front">
+            <div class="lights">
+                <!-- Luces generadas por JS -->
+            </div>
+            <div class="snow-container" id="snowContainer">
+                <!-- Copos de nieve generados por JS -->
+            </div>
+            <h1 class="title">¡Feliz Navidad!</h1>
+            <div class="tree">🎄</div>
+            <button onclick="postal.classList.add('flipped')">Ver Mensaje ↪️</button>
+            <div class="village">
+                <!-- Casitas generadas por JS -->
+            </div>
+        </div>
+        <div class="back">
+            <div class="stamps">🎄✨</div>
+            <div class="form-container">
+                <input type="text" id="fromName" placeholder="Tu nombre (remitente)">
+                <input type="text" id="toName" placeholder="Nombre del destinatario">
+                <button onclick="createMessage()">Crear Mensaje Navideño</button>
+            </div>
+            <div class="message-container">
+                <div class="message" id="message"></div>
+                <div class="signature" id="signature"></div>
+            </div>
+            <div class="postal-lines"></div>
+        </div>
+    </div>
+
+    <audio id="christmasMusic" loop>
+        <source src="https://cdnjs.cloudflare.com/ajax/libs/sound-effects/1.0.0/jingle-bells.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Inicializar elementos
+        const postal = document.getElementById('postal');
+        const music = document.getElementById('christmasMusic');
+        const musicControl = document.getElementById('musicControl');
+        let isPlaying = false;
+
+        // Control de música
+        musicControl.addEventListener('click', () => {
+            if (isPlaying) {
+                music.pause();
+                musicControl.textContent = '🎵';
+            } else {
+                music.play();
+                musicControl.textContent = '🔇';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Generar luces
+        const lights = document.querySelector('.lights');
+        for (let i = 0; i < 20; i++) {
+            const light = document.createElement('div');
+            light.className = 'light';
+            light.style.animationDelay = `${i * 0.1}s`;
+            lights.appendChild(light);
+        }
+
+        // Generar nieve
+        function createSnow() {
+            const snowContainer = document.getElementById('snowContainer');
+            const snow = document.createElement('div');
+            snow.className = 'snow';
+            snow.style.left = Math.random() * 100 + '%';
+            snow.style.opacity = Math.random();
+            snow.style.width = snow.style.height = Math.random() * 5 + 3 + 'px';
+            snow.style.animationDuration = Math.random() * 3 + 2 + 's';
+            snowContainer.appendChild(snow);
+            snow.addEventListener('animationend', () => snow.remove());
+        }
+        setInterval(createSnow, 100);
+
+        // Generar casitas
+        const village = document.querySelector('.village');
+        for (let i = 0; i < 5; i++) {
+            const house = document.createElement('div');
+            house.className = 'house';
+            house.style.left = i * 150 + 50 + 'px';
+            
+            // Añadir ventanas
+            for (let j = 0; j < 2; j++) {
+                const window = document.createElement('div');
+                window.className = 'window';
+                window.style.left = j * 25 + 10 + 'px';
+                window.style.top = '40px';
+                window.style.animationDelay = `${Math.random() * 2}s`;
+                house.appendChild(window);
+            }
+            
+            village.appendChild(house);
+        }
+
+        // Crear mensaje personalizado
+        function createMessage() {
+            const fromName = document.getElementById('fromName').value || 'Alguien especial';
+            const toName = document.getElementById('toName').value || 'Amigo/a';
+            
+            const messages = [
+                `Querido/a ${toName},\n\nQue esta Navidad llene tu hogar de alegría, tu corazón de amor y tu vida de bendiciones. ¡Felices Fiestas! ✨🎄`,
+                `Estimado/a ${toName},\n\nQue la magia de estas fechas te traiga momentos inolvidables y sueños cumplidos. ¡Feliz Navidad! 🎁⭐`,
+                `Mi apreciado/a ${toName},\n\nQue el espíritu navideño ilumine tu camino y te traiga paz, amor y prosperidad. ¡Felices Fiestas! 🕊️✨`
+            ];
+            
+            document.getElementById('message').textContent = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('signature').textContent = `Con cariño,\n${fromName}\nNavidad ${new Date().getFullYear()}`;
+        }
+
+        // Voltear la postal al hacer clic (excepto en inputs y botones)
+        postal.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+                postal.classList.toggle('flipped');
+            }
+        });
+    </script>
+</body>
+</html>
